@@ -36,6 +36,7 @@ let InOutBoxProcessorService = InOutBoxProcessorService_1 = class InOutBoxProces
         this.inboxCollectionName = config.inboxCollectionName;
         this.targetCollectionName = config.targetCollectionName;
         this.failedCollectionName = 'failed';
+        this.outboxCollectionName = 'outbox';
         this.aggregationPipelines = config.aggregationPipelines;
     }
     watchCollection(eventType) {
@@ -112,6 +113,16 @@ let InOutBoxProcessorService = InOutBoxProcessorService_1 = class InOutBoxProces
                 this.logger.error(`Error upserting document: ${error.message}`);
                 throw error;
             }
+        });
+    }
+    addToOutbox(documents) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const outboxCollection = this.connection.collection(this.outboxCollectionName);
+            if (!Array.isArray(documents)) {
+                documents = [documents];
+            }
+            yield outboxCollection.insertMany(documents.map((doc) => (Object.assign(Object.assign({}, doc), { createdAt: new Date() }))));
+            this.logger.log(`Added ${documents.length} document(s) to the outbox.`);
         });
     }
 };

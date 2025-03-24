@@ -8,9 +8,11 @@ export declare class InOutBoxProcessorService {
     private inboxCollectionName;
     private targetCollectionName;
     private failedCollectionName;
+    private outboxCollectionName;
     private aggregationPipelines;
     constructor(config: InOutBoxProcessorConfig, connection: Connection);
     watchCollection(eventType: string): Promise<void>;
     private processDocument;
     private upsertDocument;
+    addToOutbox(documents: any | any[]): Promise<void>;
 }

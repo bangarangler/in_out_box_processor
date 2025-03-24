@@ -11,6 +11,7 @@ export class InOutBoxProcessorService {
   private inboxCollectionName: string;
   private targetCollectionName: string;
   private failedCollectionName: string;
+  private outboxCollectionName: string;
   private aggregationPipelines: { [eventType: string]: any[] } = {};
 
   constructor(
@@ -20,6 +21,7 @@ export class InOutBoxProcessorService {
     this.inboxCollectionName = config.inboxCollectionName;
     this.targetCollectionName = config.targetCollectionName;
     this.failedCollectionName = 'failed';
+    this.outboxCollectionName = 'outbox';
     this.aggregationPipelines = config.aggregationPipelines;
   }
 
@@ -101,5 +103,14 @@ export class InOutBoxProcessorService {
       this.logger.error(`Error upserting document: ${error.message}`);
       throw error;
     }
+  }
+  
+  async addToOutbox(documents: any | any[]): Promise<void> {
+    const outboxCollection = this.connection.collection(this.outboxCollectionName);
+    if (!Array.isArray(documents)) {
+      documents = [documents];
+    }
+    await outboxCollection.insertMany(documents.map((doc: any) => ({ ...doc, createdAt: new Date() })));
+    this.logger.log(`Added ${documents.length} document(s) to the outbox.`);
   }
 }
